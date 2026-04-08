@@ -14,20 +14,20 @@ RUN npm run build
 
 
 # =========================
-# Runtime stage
+# Runtime stage (Node only)
 # =========================
-FROM nginx:alpine
+FROM node:20-alpine
 
-# Remove default nginx content
-RUN rm -rf /usr/share/nginx/html/*
+WORKDIR /app
 
-# Copy Vite build output
-COPY --from=build /app/dist /usr/share/nginx/html
+# Install a lightweight static file server
+RUN npm install -g serve
 
-# SPA routing config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy the built app
+COPY --from=build /app/dist ./dist
 
-EXPOSE 80
+# Cloud Run / container port
+EXPOSE 8080
 
-CMD ["nginx", "-g", "daemon off;"]
-``
+# Serve the SPA
+CMD ["serve", "-s", "dist", "-l", "8080"]
